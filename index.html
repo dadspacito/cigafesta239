@@ -1328,7 +1328,7 @@
           trackId: chosenTrack.track_id,
           title: chosenTrack.title || data?.current?.title || labelFromUrl(url),
           url: chosenTrack.title_link
-            ? `https://ciga239.bandcamp.com${chosenTrack.title_link}`
+            ? `https://ciga239.bandcamp.com/track/${chosenTrack.title_link}`
             : url,
         };
       }
