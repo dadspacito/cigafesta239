@@ -728,38 +728,12 @@
         pointer-events: none;
       }
 
-      #bc-player {
-        width: 100%;
-      }
-
-      #bc-player iframe {
+      #bandcamp-player {
         display: block;
-        width: 100% !important;
+        width: 100%;
+        height: 120px;
         border: 0;
-      }
-
-      .loading-msg {
-        font-family: "VT323", monospace;
-        font-size: 1.1rem;
-        color: var(--cyan);
-        letter-spacing: 0.22em;
-        padding: 2rem;
-        text-align: center;
-      }
-
-      .error-msg {
-        color: var(--pink);
-        padding: 1.5rem;
-        text-align: center;
-        font-family: "VT323", monospace;
-        font-size: 1rem;
-        letter-spacing: 0.14em;
-        line-height: 1.6;
-      }
-
-      .error-msg a {
-        color: var(--cyan);
-        text-decoration: none;
+        background: rgba(255, 250, 240, 0.72);
       }
 
       .btn-reload {
@@ -915,9 +889,13 @@
           </button>
           <div class="player-body" id="player-body">
             <div class="player-box">
-              <div id="bc-player">
-                <div class="loading-msg">A PREPARAR AUTOPLAY_</div>
-              </div>
+              <iframe
+                id="bandcamp-player"
+                seamless
+                allow="autoplay; encrypted-media"
+                scrolling="no"
+                loading="eager"
+              ></iframe>
             </div>
             <button class="btn-reload" id="btn-reload" type="button">
               ↺ &nbsp; NOVA TRANSMISSÃO
@@ -1155,252 +1133,9 @@
 
       document.getElementById("yr").textContent = new Date().getFullYear();
 
-      const RELEASES = [
-        "https://ciga239.bandcamp.com/album/uau-ver-o",
-        "https://ciga239.bandcamp.com/album/conceptual-m-sica-de-dan-a",
-        "https://ciga239.bandcamp.com/album/nice-primavera",
-        "https://ciga239.bandcamp.com/album/volume",
-        "https://ciga239.bandcamp.com/album/she-co",
-        "https://ciga239.bandcamp.com/album/alc-ntara-remixes",
-        "https://ciga239.bandcamp.com/album/lzn",
-        "https://ciga239.bandcamp.com/album/paisagens-glitchadas",
-        "https://ciga239.bandcamp.com/album/the-rave-simulacrum-experience",
-        "https://ciga239.bandcamp.com/album/sempre-ciga",
-        "https://ciga239.bandcamp.com/album/boylife-ravelife",
-        "https://ciga239.bandcamp.com/album/vintevinte",
-      ];
-
-      const playerPanel = document.getElementById("player-panel");
-      const playerToggle = document.getElementById("player-toggle");
-      const srcLabel = document.getElementById("src-label");
-      const bcPlayer = document.getElementById("bc-player");
-      const btnReload = document.getElementById("btn-reload");
-
-      let currentRun = 0;
-      let playerOpen = false;
-
-      function setPanelOpen(open) {
-        playerOpen = open;
-        playerPanel.classList.toggle("is-open", open);
-        playerToggle.setAttribute("aria-expanded", String(open));
-      }
-
-      function setLoading(on) {
-        btnReload.disabled = on;
-        btnReload.textContent = on ? "↻   A CARREGAR…" : "↺   NOVA TRANSMISSÃO";
-      }
-
-      function randomPick(arr) {
-        return arr[Math.floor(Math.random() * arr.length)];
-      }
-
-      function labelFromUrl(url) {
-        return decodeURIComponent(
-          url.split("/").filter(Boolean).pop() || "CIGA239",
-        )
-          .replace(/-/g, " ")
-          .toUpperCase();
-      }
-
-      function escapeHtml(str = "") {
-        return str.replace(
-          /[&<>"']/g,
-          (m) =>
-            ({
-              "&": "&amp;",
-              "<": "&lt;",
-              ">": "&gt;",
-              '"': "&quot;",
-              "'": "&#039;",
-            })[m],
-        );
-      }
-
-      async function timed(promise, ms = 12000) {
-        return Promise.race([
-          promise,
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("timeout")), ms),
-          ),
-        ]);
-      }
-
-      async function fetchViaProxy(url) {
-        const proxy = "https://api.allorigins.win/get?url=";
-        const res = await timed(fetch(proxy + encodeURIComponent(url)), 12000);
-        const data = await res.json();
-        if (!data?.contents) throw new Error("empty page");
-        return data.contents;
-      }
-
-      async function fetchOEmbed(url) {
-        const oUrl = `https://bandcamp.com/oembed?url=${encodeURIComponent(url)}&format=json`;
-
-        try {
-          const direct = await timed(fetch(oUrl), 7000);
-          if (!direct.ok) throw new Error("direct oEmbed failed");
-          return await direct.json();
-        } catch {
-          const raw = await fetchViaProxy(oUrl);
-          return JSON.parse(raw);
-        }
-      }
-
-      function extractTralbumData(html) {
-        const doc = new DOMParser().parseFromString(html, "text/html");
-        const holder = doc.querySelector("[data-tralbum]");
-
-        if (holder) {
-          const raw = holder.getAttribute("data-tralbum");
-          if (raw) return JSON.parse(raw);
-        }
-
-        const scripts = [...doc.querySelectorAll("script")].map(
-          (script) => script.textContent || "",
-        );
-        const tralbumScript = scripts.find((script) =>
-          script.includes("TralbumData"),
-        );
-
-        if (tralbumScript) {
-          const match = tralbumScript.match(
-            /TralbumData\s*=\s*(\{[\s\S]*?\});/,
-          );
-          if (match?.[1]) return JSON.parse(match[1]);
-        }
-
-        throw new Error("no tralbum data");
-      }
-
-      function buildBandcampEmbed({ type, id, trackId, title, url }) {
-        const base =
-          type === "album"
-            ? `album=${id}/size=large/bgcol=fffdf7/linkcol=F5A623/artwork=small/track=${trackId}/autoplay=true/transparent=true`
-            : `track=${trackId || id}/size=large/bgcol=fffdf7/linkcol=F5A623/artwork=small/autoplay=true/transparent=true`;
-
-        return `
-          <iframe
-            style="border:0;width:100%;height:120px;"
-            src="https://bandcamp.com/EmbeddedPlayer/${base}/"
-            allow="autoplay"
-            seamless>
-            <a href="${escapeHtml(url)}">${escapeHtml(title || "CIGA239")}</a>
-          </iframe>`;
-      }
-
-      function enableAutoplay(html) {
-        const doc = new DOMParser().parseFromString(html, "text/html");
-        const iframe = doc.querySelector("iframe");
-        if (!iframe) return html;
-
-        let src = iframe.getAttribute("src") || "";
-        if (src.includes("bandcamp.com/EmbeddedPlayer")) {
-          src = src
-            .replace(/bgcol=[0-9a-fA-F]+/g, "bgcol=fffdf7")
-            .replace(/linkcol=[0-9a-fA-F]+/g, "linkcol=F5A623");
-
-          if (!src.includes("autoplay=true")) {
-            src = src.replace(/\/?$/, "/autoplay=true/");
-          }
-        }
-
-        iframe.setAttribute("src", src);
-        iframe.setAttribute("allow", "autoplay");
-        iframe.removeAttribute("loading");
-        return iframe.outerHTML;
-      }
-
-      async function resolveRelease(url) {
-        const pageHtml = await fetchViaProxy(url);
-        const data = extractTralbumData(pageHtml);
-        const type = data?.current?.type || "album";
-        const id = data?.current?.id;
-        const tracks = (data?.trackinfo || []).filter(
-          (track) => track?.track_id,
-        );
-
-        if (!id || !tracks.length) throw new Error("missing release ids");
-
-        const chosenTrack = randomPick(tracks);
-        return {
-          type,
-          id,
-          trackId: chosenTrack.track_id,
-          title: chosenTrack.title || data?.current?.title || labelFromUrl(url),
-          url: chosenTrack.title_link
-            ? `https://ciga239.bandcamp.com${chosenTrack.title_link}`
-            : url,
-        };
-      }
-
-      async function prepareTransmission(runId) {
-        const shuffled = [...RELEASES].sort(() => Math.random() - 0.5);
-
-        for (const url of shuffled) {
-          if (runId !== currentRun) return null;
-          srcLabel.textContent = `↻ ${labelFromUrl(url)}`;
-
-          try {
-            const picked = await resolveRelease(url);
-            return {
-              html: buildBandcampEmbed(picked),
-              label: `◄ ${picked.title.toUpperCase()} ►`,
-            };
-          } catch (error) {
-            console.warn(`[CIGA239] ${url}:`, error.message);
-
-            try {
-              const oembed = await fetchOEmbed(url);
-              if (oembed?.html) {
-                return {
-                  html: enableAutoplay(oembed.html),
-                  label: `◄ ${labelFromUrl(url)} ►`,
-                };
-              }
-            } catch (_) {}
-          }
-        }
-
-        return {
-          html: `
-            <div class="error-msg">
-              FREQUÊNCIA INDISPONÍVEL<br><br>
-              <a href="https://ciga239.bandcamp.com/" target="_blank" rel="noopener">↗ ACEDER A CIGA239</a>
-            </div>`,
-          label: "◄ SINAL PERDIDO ►",
-        };
-      }
-
-      async function startAutoplay() {
-        const runId = ++currentRun;
-        setLoading(true);
-        srcLabel.textContent = "A PREPARAR_";
-        bcPlayer.innerHTML =
-          '<div class="loading-msg">A PREPARAR AUTOPLAY_</div>';
-
-        const prepared = await prepareTransmission(runId);
-        if (!prepared || runId !== currentRun) return;
-
-        srcLabel.textContent = "AUTOPLAY ARMADO_";
-
-        requestAnimationFrame(() => {
-          if (runId !== currentRun) return;
-          bcPlayer.innerHTML = prepared.html;
-          srcLabel.textContent = prepared.label;
-          setLoading(false);
-        });
-      }
-
-      playerToggle.addEventListener("click", () => {
-        setPanelOpen(!playerOpen);
-      });
-
-      btnReload.addEventListener("click", () => {
-        setPanelOpen(true);
-        startAutoplay();
-      });
-
-      startAutoplay();
     </script>
+
+    <script src="tracks.js"></script>
+    <script src="player.js"></script>
   </body>
 </html>
