@@ -63,7 +63,7 @@
 
       .palco {
         position: absolute;
-        inset: 34px 28px 34px 28px;
+        inset: 0;
         height: auto;
         overflow: hidden;
         z-index: 1;
@@ -83,19 +83,19 @@
         --boneco-w: 118px;
         --boneco-h: 168px;
         --dir: 1;
-        --escala: 1;
+        --escala: 0.92;
 
         position: absolute;
         width: var(--boneco-w);
         height: var(--boneco-h);
         left: 0;
-        top: auto;
-        bottom: 0;
+        top: 50%;
+        bottom: auto;
 
-        transform: scaleX(var(--dir)) scale(var(--escala));
-        transform-origin: center bottom;
+        transform: translateY(-50%) scaleX(var(--dir)) scale(var(--escala));
+        transform-origin: center center;
 
-        animation-duration: 3.75s;
+        animation-duration: 2.35s;
         animation-timing-function: linear;
         animation-iteration-count: infinite;
       }
@@ -111,18 +111,18 @@
       }
 
       .caminhante.linha-cima {
-        top: 0;
+        top: 28%;
         bottom: auto;
       }
 
       .caminhante.linha-meio {
-        top: calc(50% - var(--boneco-h) / 2);
+        top: 50%;
         bottom: auto;
       }
 
       .caminhante.linha-baixo {
-        bottom: 0;
-        top: auto;
+        top: 72%;
+        bottom: auto;
       }
 
       @keyframes andar-esquerda-direita {
@@ -146,7 +146,7 @@
       .corpo {
         position: absolute;
         inset: 0;
-        animation: balanco 0.5s ease-in-out infinite;
+        animation: balanco 0.36s ease-in-out infinite;
         transform-origin: 58px 158px;
       }
 
@@ -169,7 +169,7 @@
         border-radius: 50%;
         background: rgba(23, 19, 19, 0.22);
         filter: blur(2px);
-        animation: sombra 0.25s ease-in-out infinite;
+        animation: sombra 0.18s ease-in-out infinite;
       }
 
       @keyframes sombra {
@@ -200,7 +200,7 @@
         top: -10px;
         z-index: 2;
         transform-origin: 52% 86%;
-        animation: cabeca 0.5s ease-in-out infinite;
+        animation: cabeca 0.36s ease-in-out infinite;
         filter: drop-shadow(0 9px 11px rgba(23, 19, 19, 0.2));
       }
 
@@ -221,13 +221,13 @@
       .braco-e {
         left: 17px;
         transform-origin: 78% 8%;
-        animation: bracoA 0.36s ease-in-out infinite;
+        animation: bracoA 0.26s ease-in-out infinite;
       }
 
       .braco-d {
         left: 47px;
         transform-origin: 78% 7%;
-        animation: bracoB 0.36s ease-in-out infinite;
+        animation: bracoB 0.26s ease-in-out infinite;
       }
 
       .perna {
@@ -239,12 +239,12 @@
 
       .perna-e {
         left: 30px;
-        animation: pernaA 0.36s ease-in-out infinite;
+        animation: pernaA 0.26s ease-in-out infinite;
       }
 
       .perna-d {
         left: 67px;
-        animation: pernaB 0.36s ease-in-out infinite;
+        animation: pernaB 0.26s ease-in-out infinite;
       }
 
       @keyframes cabeca {
@@ -298,14 +298,16 @@
       }
 
       @media (max-width: 560px) {
-        .palco {
-          inset: 30px 20px 30px 20px;
-        }
-
         .caminhante {
-          --boneco-w: 92px;
-          --boneco-h: 131px;
-          --escala: 0.78;
+          --escala: 0.74;
+          animation-duration: 2.05s;
+        }
+      }
+
+      @media (max-width: 380px) {
+        .caminhante {
+          --escala: 0.62;
+          animation-duration: 1.9s;
         }
       }
 
@@ -321,6 +323,8 @@
 
         .caminhante {
           left: calc(50% - var(--boneco-w) / 2);
+          top: 50%;
+          transform: translateY(-50%) scale(var(--escala));
         }
       }
 
@@ -599,7 +603,7 @@
 
       #anim-canvas {
         display: block;
-        position: center;
+        position: absolute;
         inset: 0;
         width: 100%;
         height: 100%;
@@ -845,7 +849,7 @@
 
           <span class="anim-lbl br">● REC LIVE</span>
           <div class="palco">
-            <div class="caminhante da-esquerda linha-baixo" aria-hidden="true">
+            <div class="caminhante da-esquerda linha-meio" aria-hidden="true">
               <div class="sombra"></div>
 
               <div class="corpo">
