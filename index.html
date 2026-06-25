@@ -599,7 +599,7 @@
 
       #anim-canvas {
         display: block;
-        position: absolute;
+        position: center;
         inset: 0;
         width: 100%;
         height: 100%;
@@ -1311,7 +1311,9 @@
         const data = extractTralbumData(pageHtml);
         const type = data?.current?.type || "album";
         const id = data?.current?.id;
-        const tracks = (data?.trackinfo || []).filter((track) => track?.track_id);
+        const tracks = (data?.trackinfo || []).filter(
+          (track) => track?.track_id,
+        );
 
         if (!id || !tracks.length) throw new Error("missing release ids");
 
@@ -1369,7 +1371,8 @@
         const runId = ++currentRun;
         setLoading(true);
         srcLabel.textContent = "A PREPARAR_";
-        bcPlayer.innerHTML = '<div class="loading-msg">A PREPARAR AUTOPLAY_</div>';
+        bcPlayer.innerHTML =
+          '<div class="loading-msg">A PREPARAR AUTOPLAY_</div>';
 
         const prepared = await prepareTransmission(runId);
         if (!prepared || runId !== currentRun) return;
