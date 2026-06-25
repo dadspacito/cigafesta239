@@ -1,0 +1,1399 @@
+<!doctype html>
+<html lang="pt">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>é sempre CIGA™</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&family=VT323&family=Share+Tech+Mono&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --void: #fffdf7;
+        --paper: #fffaf0;
+        --red: #d7193f;
+        --blue: #0072bc;
+        --green-line: #63bd45;
+        --orange: #f5a623;
+        --taupe: #a99c8f;
+        --ink: #171313;
+
+        --pink: var(--red);
+        --cyan: var(--blue);
+        --uv: var(--green-line);
+        --green: var(--orange);
+        --white: var(--ink);
+        --dim: rgba(23, 19, 19, 0.42);
+      }
+
+      *,
+      *::before,
+      *::after {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+
+      body {
+        background:
+          linear-gradient(
+            116deg,
+            transparent 0 30%,
+            rgba(0, 114, 188, 0.08) 30% 31.2%,
+            transparent 31.2% 100%
+          ),
+          linear-gradient(
+            164deg,
+            transparent 0 53%,
+            rgba(215, 25, 63, 0.08) 53% 54.4%,
+            transparent 54.4% 100%
+          ),
+          var(--void);
+        color: var(--white);
+        font-family: "Share Tech Mono", monospace;
+        overflow-x: hidden;
+      }
+
+      .palco {
+        position: absolute;
+        inset: 34px 28px 34px 28px;
+        height: auto;
+        overflow: hidden;
+        z-index: 1;
+        pointer-events: none;
+      }
+
+      #anim-canvas {
+        z-index: 0;
+      }
+
+      .anim-lbl,
+      .c {
+        z-index: 3;
+      }
+
+      .caminhante {
+        --boneco-w: 118px;
+        --boneco-h: 168px;
+        --dir: 1;
+        --escala: 1;
+
+        position: absolute;
+        width: var(--boneco-w);
+        height: var(--boneco-h);
+        left: 0;
+        top: auto;
+        bottom: 0;
+
+        transform: scaleX(var(--dir)) scale(var(--escala));
+        transform-origin: center bottom;
+
+        animation-duration: 3.75s;
+        animation-timing-function: linear;
+        animation-iteration-count: infinite;
+      }
+
+      .caminhante.da-esquerda {
+        --dir: 1;
+        animation-name: andar-esquerda-direita;
+      }
+
+      .caminhante.da-direita {
+        --dir: -1;
+        animation-name: andar-direita-esquerda;
+      }
+
+      .caminhante.linha-cima {
+        top: 0;
+        bottom: auto;
+      }
+
+      .caminhante.linha-meio {
+        top: calc(50% - var(--boneco-h) / 2);
+        bottom: auto;
+      }
+
+      .caminhante.linha-baixo {
+        bottom: 0;
+        top: auto;
+      }
+
+      @keyframes andar-esquerda-direita {
+        from {
+          left: 0;
+        }
+        to {
+          left: calc(100% - var(--boneco-w));
+        }
+      }
+
+      @keyframes andar-direita-esquerda {
+        from {
+          left: calc(100% - var(--boneco-w));
+        }
+        to {
+          left: 0;
+        }
+      }
+
+      .corpo {
+        position: absolute;
+        inset: 0;
+        animation: balanco 0.5s ease-in-out infinite;
+        transform-origin: 58px 158px;
+      }
+
+      @keyframes balanco {
+        0%,
+        100% {
+          transform: scale(0.88) translateY(0) rotate(-1.2deg);
+        }
+        50% {
+          transform: scale(0.88) translateY(-6px) rotate(2.2deg);
+        }
+      }
+
+      .sombra {
+        position: absolute;
+        bottom: -4px;
+        left: 34px;
+        width: 56px;
+        height: 9px;
+        border-radius: 50%;
+        background: rgba(23, 19, 19, 0.22);
+        filter: blur(2px);
+        animation: sombra 0.25s ease-in-out infinite;
+      }
+
+      @keyframes sombra {
+        50% {
+          transform: scaleX(0.72);
+          opacity: 0.2;
+        }
+      }
+
+      .peca {
+        position: absolute;
+        display: block;
+        height: auto;
+        user-select: none;
+        -webkit-user-drag: none;
+        filter: drop-shadow(0 8px 10px rgba(23, 19, 19, 0.18));
+      }
+
+      .torso,
+      .braco,
+      .perna {
+        transform: scaleX(-1);
+      }
+
+      .cabeca {
+        width: 56px;
+        left: 32px;
+        top: -10px;
+        z-index: 2;
+        transform-origin: 52% 86%;
+        animation: cabeca 0.5s ease-in-out infinite;
+        filter: drop-shadow(0 9px 11px rgba(23, 19, 19, 0.2));
+      }
+
+      .torso {
+        width: 57px;
+        left: 39px;
+        top: 44px;
+        z-index: 4;
+        transform-origin: 50% 12%;
+      }
+
+      .braco {
+        width: 41px;
+        top: 57px;
+        z-index: 5;
+      }
+
+      .braco-e {
+        left: 17px;
+        transform-origin: 78% 8%;
+        animation: bracoA 0.36s ease-in-out infinite;
+      }
+
+      .braco-d {
+        left: 47px;
+        transform-origin: 78% 7%;
+        animation: bracoB 0.36s ease-in-out infinite;
+      }
+
+      .perna {
+        width: 39px;
+        top: 94px;
+        z-index: 3;
+        transform-origin: 50% 8%;
+      }
+
+      .perna-e {
+        left: 30px;
+        animation: pernaA 0.36s ease-in-out infinite;
+      }
+
+      .perna-d {
+        left: 67px;
+        animation: pernaB 0.36s ease-in-out infinite;
+      }
+
+      @keyframes cabeca {
+        0%,
+        100% {
+          transform: rotate(-1.5deg);
+        }
+        50% {
+          transform: rotate(2.4deg);
+        }
+      }
+
+      @keyframes bracoA {
+        0%,
+        100% {
+          transform: scaleX(-1) rotate(22deg);
+        }
+        50% {
+          transform: scaleX(-1) rotate(-30deg);
+        }
+      }
+
+      @keyframes bracoB {
+        0%,
+        100% {
+          transform: scaleX(-1) rotate(61deg);
+        }
+        50% {
+          transform: scaleX(-1) rotate(24deg);
+        }
+      }
+
+      @keyframes pernaA {
+        0%,
+        100% {
+          transform: scaleX(-1) rotate(18deg);
+        }
+        50% {
+          transform: scaleX(-1) rotate(-32deg);
+        }
+      }
+
+      @keyframes pernaB {
+        0%,
+        100% {
+          transform: scaleX(-1) rotate(-29deg);
+        }
+        50% {
+          transform: scaleX(-1) rotate(25deg);
+        }
+      }
+
+      @media (max-width: 560px) {
+        .palco {
+          inset: 30px 20px 30px 20px;
+        }
+
+        .caminhante {
+          --boneco-w: 92px;
+          --boneco-h: 131px;
+          --escala: 0.78;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .caminhante,
+        .corpo,
+        .cabeca,
+        .braco,
+        .perna,
+        .sombra {
+          animation: none;
+        }
+
+        .caminhante {
+          left: calc(50% - var(--boneco-w) / 2);
+        }
+      }
+
+      .grid-bg {
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(0, 114, 188, 0.055) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(99, 189, 69, 0.05) 1px, transparent 1px);
+        background-size: 42px 42px;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .vignette {
+        position: fixed;
+        inset: 0;
+        background: radial-gradient(
+          ellipse at 50% 40%,
+          transparent 48%,
+          rgba(245, 166, 35, 0.11) 100%
+        );
+        pointer-events: none;
+        z-index: 1;
+      }
+      .scanlines {
+        position: fixed;
+        inset: 0;
+        background: repeating-linear-gradient(
+          to bottom,
+          transparent 0,
+          transparent 3px,
+          rgba(23, 19, 19, 0.035) 3px,
+          rgba(23, 19, 19, 0.035) 4px
+        );
+        pointer-events: none;
+        z-index: 999;
+      }
+
+      .page {
+        position: relative;
+        z-index: 2;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2.5rem 1.5rem 2rem;
+      }
+
+      header {
+        text-align: center;
+        width: 100%;
+        max-width: 760px;
+        margin-bottom: 0.8rem;
+      }
+
+      .eyebrow {
+        font-family: "VT323", monospace;
+        font-size: 0.82rem;
+        color: var(--uv);
+        opacity: 0.65;
+        letter-spacing: 0.55em;
+        text-transform: uppercase;
+        margin-bottom: 0.4rem;
+      }
+
+      .title-wrap {
+        position: relative;
+        display: inline-block;
+      }
+
+      .title {
+        font-family: "Orbitron", monospace;
+        font-weight: 900;
+        font-size: clamp(2.6rem, 9.5vw, 7rem);
+        line-height: 1;
+        letter-spacing: -0.01em;
+        color: var(--taupe);
+        position: relative;
+        text-shadow:
+          0 3px 0 rgba(255, 255, 255, 0.9),
+          0 0 22px rgba(245, 166, 35, 0.16);
+      }
+
+      .title .ciga {
+        color: var(--taupe);
+        text-shadow:
+          0 3px 0 rgba(255, 255, 255, 0.95),
+          0 0 18px rgba(245, 166, 35, 0.24);
+      }
+      .title .tm {
+        font-size: 0.33em;
+        vertical-align: super;
+        color: var(--orange);
+        text-shadow: 0 0 10px rgba(245, 166, 35, 0.34);
+      }
+
+      .glitch {
+        position: relative;
+      }
+      .glitch::before,
+      .glitch::after {
+        content: attr(data-text);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        font-family: "Orbitron", monospace;
+        font-weight: 900;
+        font-size: inherit;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      .glitch::before {
+        color: var(--cyan);
+        text-shadow: none;
+        animation: ga 3.6s infinite;
+      }
+      .glitch::after {
+        color: var(--pink);
+        text-shadow: none;
+        animation: gb 4.3s infinite;
+      }
+
+      @keyframes ga {
+        0%,
+        88%,
+        100% {
+          clip-path: none;
+          transform: none;
+          opacity: 0;
+        }
+        89% {
+          clip-path: inset(12% 0 72% 0);
+          transform: translate(-7px, 0);
+          opacity: 0.8;
+        }
+        91% {
+          clip-path: inset(52% 0 22% 0);
+          transform: translate(5px, 0);
+          opacity: 0.8;
+        }
+        93% {
+          clip-path: inset(82% 0 4% 0);
+          transform: translate(-4px, 0);
+          opacity: 0.8;
+        }
+        95% {
+          clip-path: none;
+          transform: none;
+          opacity: 0;
+        }
+      }
+      @keyframes gb {
+        0%,
+        83%,
+        100% {
+          clip-path: none;
+          transform: none;
+          opacity: 0;
+        }
+        84% {
+          clip-path: inset(38% 0 48% 0);
+          transform: translate(6px, 0);
+          opacity: 0.7;
+        }
+        86% {
+          clip-path: inset(3% 0 87% 0);
+          transform: translate(-5px, 0);
+          opacity: 0.7;
+        }
+        88% {
+          clip-path: none;
+          transform: none;
+          opacity: 0;
+        }
+      }
+
+      .stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 0.65rem;
+        font-family: "VT323", monospace;
+        font-size: 1rem;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+      }
+      .stats span {
+        color: var(--dim);
+      }
+      .stats b {
+        color: var(--cyan);
+      }
+
+      @keyframes blink {
+        0%,
+        49% {
+          opacity: 1;
+        }
+        50%,
+        100% {
+          opacity: 0;
+        }
+      }
+      .cur {
+        color: var(--green);
+        animation: blink 1s infinite;
+      }
+
+      .anim-wrap {
+        width: 100%;
+        max-width: 620px;
+        margin: 1.2rem 0 1rem;
+      }
+
+      .anim-frame {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        border: 2px solid rgba(0, 114, 188, 0.36);
+        overflow: hidden;
+      }
+
+      .c {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        pointer-events: none;
+        z-index: 2;
+      }
+      .c-tl {
+        top: -1px;
+        left: -1px;
+        border-top: 2px solid var(--cyan);
+        border-left: 2px solid var(--cyan);
+      }
+      .c-tr {
+        top: -1px;
+        right: -1px;
+        border-top: 2px solid var(--cyan);
+        border-right: 2px solid var(--cyan);
+      }
+      .c-bl {
+        bottom: -1px;
+        left: -1px;
+        border-bottom: 2px solid var(--cyan);
+        border-left: 2px solid var(--cyan);
+      }
+      .c-br {
+        bottom: -1px;
+        right: -1px;
+        border-bottom: 2px solid var(--cyan);
+        border-right: 2px solid var(--cyan);
+      }
+
+      .anim-lbl {
+        position: absolute;
+        pointer-events: none;
+        z-index: 2;
+        font-family: "VT323", monospace;
+        font-size: 0.72rem;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+      }
+      .anim-lbl.tl {
+        top: 8px;
+        left: 10px;
+        color: rgba(215, 25, 63, 0.66);
+      }
+      .anim-lbl.br {
+        bottom: 8px;
+        right: 10px;
+        color: rgba(0, 114, 188, 0.58);
+      }
+
+      #anim-canvas {
+        display: block;
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .promo-wrap {
+        width: 100%;
+        max-width: 620px;
+        margin: 0 0 1rem;
+      }
+
+      .promo-link {
+        display: block;
+        border: 2px solid rgba(245, 166, 35, 0.62);
+        background: var(--paper);
+        overflow: hidden;
+        text-decoration: none;
+        transition:
+          transform 0.18s ease,
+          border-color 0.18s ease,
+          box-shadow 0.18s ease;
+      }
+
+      .promo-link:hover {
+        transform: translateY(-2px);
+        border-color: var(--orange);
+        box-shadow: 0 10px 26px rgba(245, 166, 35, 0.18);
+      }
+
+      .promo-img {
+        display: block;
+        width: 100%;
+        height: auto;
+      }
+
+      .player-wrap {
+        width: 100%;
+        max-width: 620px;
+        margin-bottom: 1.8rem;
+      }
+
+      .player-panel {
+        border: 1px solid rgba(245, 166, 35, 0.48);
+        background: rgba(255, 250, 240, 0.72);
+        overflow: hidden;
+      }
+
+      .player-toggle {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        min-height: 48px;
+        padding: 0.58rem 0.75rem;
+        border: 0;
+        background: transparent;
+        cursor: pointer;
+        color: inherit;
+        font-family: "VT323", monospace;
+        font-size: 0.88rem;
+        letter-spacing: 0.2em;
+        text-align: left;
+        text-transform: uppercase;
+        user-select: none;
+      }
+
+      .player-toggle:focus-visible {
+        outline: 2px solid var(--orange);
+        outline-offset: -2px;
+      }
+
+      .toggle-icon {
+        color: var(--orange);
+        transition: transform 0.16s ease;
+      }
+
+      .player-panel.is-open .toggle-icon {
+        transform: rotate(90deg);
+      }
+
+      .player-toggle .lbl {
+        color: var(--pink);
+      }
+
+      .player-toggle .src {
+        color: var(--cyan);
+        font-size: 0.75rem;
+        text-align: right;
+      }
+
+      .player-body {
+        max-height: 1px;
+        opacity: 0;
+        overflow: hidden;
+        pointer-events: none;
+        transition:
+          max-height 0.24s ease,
+          opacity 0.18s ease;
+      }
+
+      .player-panel.is-open .player-body {
+        max-height: 180px;
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .player-box {
+        position: relative;
+        border-top: 1px solid rgba(245, 166, 35, 0.48);
+        min-height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .player-box::after {
+        content: "";
+        position: absolute;
+        inset: 4px;
+        border: 1px solid rgba(215, 25, 63, 0.12);
+        pointer-events: none;
+      }
+
+      #bc-player {
+        width: 100%;
+      }
+
+      #bc-player iframe {
+        display: block;
+        width: 100% !important;
+        border: 0;
+      }
+
+      .loading-msg {
+        font-family: "VT323", monospace;
+        font-size: 1.1rem;
+        color: var(--cyan);
+        letter-spacing: 0.22em;
+        padding: 2rem;
+        text-align: center;
+      }
+
+      .error-msg {
+        color: var(--pink);
+        padding: 1.5rem;
+        text-align: center;
+        font-family: "VT323", monospace;
+        font-size: 1rem;
+        letter-spacing: 0.14em;
+        line-height: 1.6;
+      }
+
+      .error-msg a {
+        color: var(--cyan);
+        text-decoration: none;
+      }
+
+      .btn-reload {
+        display: block;
+        width: calc(100% - 8px);
+        margin: 4px;
+        padding: 0.35rem 1rem;
+        background: none;
+        border: 1px solid rgba(0, 114, 188, 0.32);
+        color: var(--dim);
+        font-family: "VT323", monospace;
+        font-size: 0.85rem;
+        letter-spacing: 0.3em;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition:
+          border-color 0.2s,
+          color 0.2s;
+      }
+
+      .btn-reload:hover:not(:disabled) {
+        border-color: var(--pink);
+        color: var(--pink);
+      }
+
+      .btn-reload:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      footer {
+        margin-top: auto;
+        font-family: "VT323", monospace;
+        font-size: 0.72rem;
+        color: rgba(169, 156, 143, 0.82);
+        letter-spacing: 0.3em;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      footer a {
+        color: var(--orange);
+        text-decoration: none;
+      }
+
+      footer a:hover {
+        color: var(--blue);
+      }
+
+      .footer-credit {
+        margin-top: 0.45rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grid-bg"></div>
+    <div class="vignette"></div>
+    <div class="scanlines"></div>
+
+    <div class="page">
+      <header>
+        <div class="eyebrow">
+          SISTEMA CIGA™ &nbsp;·&nbsp; TRANSMISSÃO ACTIVA
+        </div>
+        <div class="title-wrap">
+          <h1 class="title glitch" data-text="é sempre CIGA™">
+            é sempre&nbsp;<span class="ciga"
+              >CIGA<span class="tm">™</span></span
+            >
+          </h1>
+        </div>
+        <div class="stats">
+          <span>SYS:<b>ONLINE</b></span>
+          <span>FREQ:<b>∞&thinsp;Hz</b></span>
+          <span>MODO:<b>CIGA239</b><span class="cur">_</span></span>
+        </div>
+      </header>
+
+      <section class="anim-wrap">
+        <div class="anim-frame">
+          <div class="c c-tl"></div>
+          <div class="c c-tr"></div>
+          <div class="c c-bl"></div>
+          <div class="c c-br"></div>
+          <span class="anim-lbl tl">CIGA.EXE</span>
+          <canvas id="anim-canvas"></canvas>
+
+          <span class="anim-lbl br">● REC LIVE</span>
+          <div class="palco">
+            <div class="caminhante da-esquerda linha-baixo" aria-hidden="true">
+              <div class="sombra"></div>
+
+              <div class="corpo">
+                <img
+                  class="peca perna perna-e"
+                  src="assets/perna-esq.png"
+                  alt=""
+                />
+                <img
+                  class="peca perna perna-d"
+                  src="assets/perna-dir.png"
+                  alt=""
+                />
+
+                <img class="peca torso" src="assets/torso.png" alt="" />
+
+                <img
+                  class="peca braco braco-e"
+                  src="assets/braco-esq.png"
+                  alt=""
+                />
+                <img
+                  class="peca braco braco-d"
+                  src="assets/braco-dir.png"
+                  alt=""
+                />
+
+                <img class="peca cabeca" src="assets/cabeca.png" alt="" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="promo-wrap">
+        <a
+          class="promo-link"
+          href="https://shotgun.live/en/events/ciga-festa-2026"
+          target="_blank"
+          rel="noopener"
+          aria-label="Abrir página da CIGA Festa 2026 na Shotgun"
+        >
+          <img
+            class="promo-img"
+            src="assets/cigafesta239.jpg"
+            alt="CIGA Festa 239, 17 e 18 de julho, no Teatrão"
+          />
+        </a>
+      </section>
+
+      <section class="player-wrap">
+        <div class="player-panel" id="player-panel">
+          <button
+            class="player-toggle"
+            id="player-toggle"
+            type="button"
+            aria-expanded="false"
+            aria-controls="player-body"
+          >
+            <span class="toggle-icon" aria-hidden="true">▶</span>
+            <span class="lbl">TRANSMISSÃO ALEATÓRIA</span>
+            <span class="src" id="src-label">A PREPARAR_</span>
+          </button>
+          <div class="player-body" id="player-body">
+            <div class="player-box">
+              <div id="bc-player">
+                <div class="loading-msg">A PREPARAR AUTOPLAY_</div>
+              </div>
+            </div>
+            <button class="btn-reload" id="btn-reload" type="button">
+              ↺ &nbsp; NOVA TRANSMISSÃO
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <footer>
+        <div>
+          CIGA™ SYSTEMS v1.0 &nbsp;·&nbsp; TODOS OS DIREITOS EVENTUALMENTE
+          RESERVADOS &nbsp;·&nbsp; <span id="yr"></span>
+        </div>
+        <div class="footer-credit">
+          <a
+            href="https://github.com/dadspacito/"
+            target="_blank"
+            rel="noopener"
+            >déds, 2026</a
+          >
+        </div>
+      </footer>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("anim-canvas");
+      const ctx = canvas.getContext("2d");
+
+      function resizeCanvas() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+      }
+      resizeCanvas();
+      new ResizeObserver(resizeCanvas).observe(canvas.parentElement);
+      const rx = (v, a) => ({
+        x: v.x,
+        y: v.y * Math.cos(a) - v.z * Math.sin(a),
+        z: v.y * Math.sin(a) + v.z * Math.cos(a),
+      });
+      const ry = (v, a) => ({
+        x: v.x * Math.cos(a) + v.z * Math.sin(a),
+        y: v.y,
+        z: -v.x * Math.sin(a) + v.z * Math.cos(a),
+      });
+      const rz = (v, a) => ({
+        x: v.x * Math.cos(a) - v.y * Math.sin(a),
+        y: v.x * Math.sin(a) + v.y * Math.cos(a),
+        z: v.z,
+      });
+      const pr = (v, fov, cx, cy) => {
+        const d = v.z + 430,
+          s = fov / d;
+        return { x: v.x * s + cx, y: v.y * s + cy, z: v.z };
+      };
+      const φ = (1 + Math.sqrt(5)) / 2,
+        S = 88;
+      const VERTS = [
+        [-1, φ, 0],
+        [1, φ, 0],
+        [-1, -φ, 0],
+        [1, -φ, 0],
+        [0, -1, φ],
+        [0, 1, φ],
+        [0, -1, -φ],
+        [0, 1, -φ],
+        [φ, 0, -1],
+        [φ, 0, 1],
+        [-φ, 0, -1],
+        [-φ, 0, 1],
+      ].map(([x, y, z]) => ({ x: x * S, y: y * S, z: z * S }));
+      const EDGES = [
+        [0, 1],
+        [0, 5],
+        [0, 7],
+        [0, 10],
+        [0, 11],
+        [1, 5],
+        [1, 7],
+        [1, 8],
+        [1, 9],
+        [2, 3],
+        [2, 4],
+        [2, 6],
+        [2, 10],
+        [2, 11],
+        [3, 4],
+        [3, 6],
+        [3, 8],
+        [3, 9],
+        [4, 5],
+        [4, 9],
+        [4, 11],
+        [5, 9],
+        [5, 11],
+        [6, 7],
+        [6, 8],
+        [6, 10],
+        [7, 8],
+        [7, 10],
+        [8, 9],
+        [10, 11],
+      ];
+      const PTS = Array.from({ length: 65 }, () => ({
+        x: (Math.random() - 0.5) * 480,
+        y: (Math.random() - 0.5) * 480,
+        z: (Math.random() - 0.5) * 480,
+        vx: (Math.random() - 0.5) * 0.38,
+        vy: (Math.random() - 0.5) * 0.38,
+        vz: (Math.random() - 0.5) * 0.38,
+        r: Math.random() * 1.4 + 0.3,
+      }));
+
+      let t = 0,
+        glitch = false,
+        gf = 0;
+
+      function frame() {
+        const W = canvas.width,
+          H = canvas.height,
+          cx = W / 2,
+          cy = H / 2;
+        ctx.fillStyle = "rgba(255,253,247,.23)";
+        ctx.fillRect(0, 0, W, H);
+
+        t += 0.004;
+        if (!glitch && Math.random() < 0.006) {
+          glitch = true;
+          gf = Math.floor(Math.random() * 14) + 4;
+        }
+        if (glitch) {
+          gf--;
+          if (gf <= 0) glitch = false;
+        }
+        const pulse = 0.5 + 0.5 * Math.sin(t * 2.8);
+        const grd = ctx.createRadialGradient(
+          cx,
+          cy,
+          0,
+          cx,
+          cy,
+          70 * pulse + 20,
+        );
+        grd.addColorStop(0, `rgba(245,166,35,${0.18 * pulse})`);
+        grd.addColorStop(1, "rgba(255,255,255,0)");
+        ctx.fillStyle = grd;
+        ctx.fillRect(0, 0, W, H);
+        const pv = VERTS.map((v) => {
+          let r = rx(v, t * 0.68);
+          r = ry(r, t);
+          r = rz(r, t * 0.31);
+          return pr(r, 285, cx, cy);
+        });
+        EDGES.forEach(([a, b], i) => {
+          const pa = pv[a],
+            pb = pv[b];
+          const depth = ((pa.z + pb.z) / 2 + 200) / 400;
+          const alpha = Math.max(0.05, Math.min(0.9, depth));
+          ctx.strokeStyle =
+            i % 3 === 0
+              ? `rgba(0,114,188,${alpha * 0.9})`
+              : i % 3 === 1
+                ? `rgba(215,25,63,${alpha * 0.86})`
+                : `rgba(99,189,69,${alpha * 0.82})`;
+          ctx.lineWidth = 0.9;
+          ctx.beginPath();
+          ctx.moveTo(pa.x, pa.y);
+          ctx.lineTo(pb.x, pb.y);
+          ctx.stroke();
+        });
+        pv.forEach((p, i) => {
+          const d = (p.z + 200) / 400;
+          ctx.globalAlpha = Math.max(0.08, d);
+          ctx.fillStyle = i % 2 === 0 ? "#0072BC" : "#F5A623";
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, Math.max(0.5, d * 3.2), 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+        PTS.forEach((p) => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.z += p.vz;
+          if (Math.abs(p.x) > 310) p.vx *= -1;
+          if (Math.abs(p.y) > 310) p.vy *= -1;
+          if (Math.abs(p.z) > 310) p.vz *= -1;
+          const pp = pr(p, 285, cx, cy);
+          const d = (pp.z + 200) / 400;
+          ctx.fillStyle = `rgba(169,156,143,${Math.max(0, d * 0.42)})`;
+          ctx.beginPath();
+          ctx.arc(pp.x, pp.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        if (glitch) {
+          const n = Math.floor(Math.random() * 4) + 1;
+          for (let i = 0; i < n; i++) {
+            const y = Math.random() * H,
+              h = Math.random() * 5 + 1,
+              dx = (Math.random() - 0.5) * 32;
+            try {
+              const strip = ctx.getImageData(
+                0,
+                Math.max(0, y),
+                W,
+                Math.max(1, h),
+              );
+              ctx.putImageData(strip, dx, y);
+            } catch (_) {}
+            ctx.globalAlpha = 0.14;
+            ctx.fillStyle = Math.random() < 0.5 ? "#0072BC" : "#D7193F";
+            ctx.fillRect(0, y, W, h);
+            ctx.globalAlpha = 1;
+          }
+          if (Math.random() < 0.35) {
+            ctx.save();
+            ctx.font = `bold ${Math.floor(W * 0.12)}px Orbitron,monospace`;
+            ctx.fillStyle = "rgba(245,166,35,.14)";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(
+              "CIGA™",
+              cx + (Math.random() - 0.5) * 28,
+              cy + (Math.random() - 0.5) * 22,
+            );
+            ctx.restore();
+          }
+        }
+        for (let y = 0; y < H; y += 4) {
+          ctx.fillStyle = "rgba(23,19,19,.025)";
+          ctx.fillRect(0, y, W, 2);
+        }
+
+        requestAnimationFrame(frame);
+      }
+      frame();
+
+      document.getElementById("yr").textContent = new Date().getFullYear();
+
+      const RELEASES = [
+        "https://ciga239.bandcamp.com/album/uau-ver-o",
+        "https://ciga239.bandcamp.com/album/conceptual-m-sica-de-dan-a",
+        "https://ciga239.bandcamp.com/album/nice-primavera",
+        "https://ciga239.bandcamp.com/album/volume",
+        "https://ciga239.bandcamp.com/album/she-co",
+        "https://ciga239.bandcamp.com/album/alc-ntara-remixes",
+        "https://ciga239.bandcamp.com/album/lzn",
+        "https://ciga239.bandcamp.com/album/paisagens-glitchadas",
+        "https://ciga239.bandcamp.com/album/the-rave-simulacrum-experience",
+        "https://ciga239.bandcamp.com/album/sempre-ciga",
+        "https://ciga239.bandcamp.com/album/boylife-ravelife",
+        "https://ciga239.bandcamp.com/album/vintevinte",
+      ];
+
+      const playerPanel = document.getElementById("player-panel");
+      const playerToggle = document.getElementById("player-toggle");
+      const srcLabel = document.getElementById("src-label");
+      const bcPlayer = document.getElementById("bc-player");
+      const btnReload = document.getElementById("btn-reload");
+
+      let currentRun = 0;
+      let playerOpen = false;
+
+      function setPanelOpen(open) {
+        playerOpen = open;
+        playerPanel.classList.toggle("is-open", open);
+        playerToggle.setAttribute("aria-expanded", String(open));
+      }
+
+      function setLoading(on) {
+        btnReload.disabled = on;
+        btnReload.textContent = on ? "↻   A CARREGAR…" : "↺   NOVA TRANSMISSÃO";
+      }
+
+      function randomPick(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+      }
+
+      function labelFromUrl(url) {
+        return decodeURIComponent(
+          url.split("/").filter(Boolean).pop() || "CIGA239",
+        )
+          .replace(/-/g, " ")
+          .toUpperCase();
+      }
+
+      function escapeHtml(str = "") {
+        return str.replace(
+          /[&<>"']/g,
+          (m) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#039;",
+            })[m],
+        );
+      }
+
+      async function timed(promise, ms = 12000) {
+        return Promise.race([
+          promise,
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("timeout")), ms),
+          ),
+        ]);
+      }
+
+      async function fetchViaProxy(url) {
+        const proxy = "https://api.allorigins.win/get?url=";
+        const res = await timed(fetch(proxy + encodeURIComponent(url)), 12000);
+        const data = await res.json();
+        if (!data?.contents) throw new Error("empty page");
+        return data.contents;
+      }
+
+      async function fetchOEmbed(url) {
+        const oUrl = `https://bandcamp.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+
+        try {
+          const direct = await timed(fetch(oUrl), 7000);
+          if (!direct.ok) throw new Error("direct oEmbed failed");
+          return await direct.json();
+        } catch {
+          const raw = await fetchViaProxy(oUrl);
+          return JSON.parse(raw);
+        }
+      }
+
+      function extractTralbumData(html) {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const holder = doc.querySelector("[data-tralbum]");
+
+        if (holder) {
+          const raw = holder.getAttribute("data-tralbum");
+          if (raw) return JSON.parse(raw);
+        }
+
+        const scripts = [...doc.querySelectorAll("script")].map(
+          (script) => script.textContent || "",
+        );
+        const tralbumScript = scripts.find((script) =>
+          script.includes("TralbumData"),
+        );
+
+        if (tralbumScript) {
+          const match = tralbumScript.match(
+            /TralbumData\s*=\s*(\{[\s\S]*?\});/,
+          );
+          if (match?.[1]) return JSON.parse(match[1]);
+        }
+
+        throw new Error("no tralbum data");
+      }
+
+      function buildBandcampEmbed({ type, id, trackId, title, url }) {
+        const base =
+          type === "album"
+            ? `album=${id}/size=large/bgcol=fffdf7/linkcol=F5A623/artwork=small/track=${trackId}/autoplay=true/transparent=true`
+            : `track=${trackId || id}/size=large/bgcol=fffdf7/linkcol=F5A623/artwork=small/autoplay=true/transparent=true`;
+
+        return `
+          <iframe
+            style="border:0;width:100%;height:120px;"
+            src="https://bandcamp.com/EmbeddedPlayer/${base}/"
+            allow="autoplay"
+            seamless>
+            <a href="${escapeHtml(url)}">${escapeHtml(title || "CIGA239")}</a>
+          </iframe>`;
+      }
+
+      function enableAutoplay(html) {
+        const doc = new DOMParser().parseFromString(html, "text/html");
+        const iframe = doc.querySelector("iframe");
+        if (!iframe) return html;
+
+        let src = iframe.getAttribute("src") || "";
+        if (src.includes("bandcamp.com/EmbeddedPlayer")) {
+          src = src
+            .replace(/bgcol=[0-9a-fA-F]+/g, "bgcol=fffdf7")
+            .replace(/linkcol=[0-9a-fA-F]+/g, "linkcol=F5A623");
+
+          if (!src.includes("autoplay=true")) {
+            src = src.replace(/\/?$/, "/autoplay=true/");
+          }
+        }
+
+        iframe.setAttribute("src", src);
+        iframe.setAttribute("allow", "autoplay");
+        iframe.removeAttribute("loading");
+        return iframe.outerHTML;
+      }
+
+      async function resolveRelease(url) {
+        const pageHtml = await fetchViaProxy(url);
+        const data = extractTralbumData(pageHtml);
+        const type = data?.current?.type || "album";
+        const id = data?.current?.id;
+        const tracks = (data?.trackinfo || []).filter((track) => track?.track_id);
+
+        if (!id || !tracks.length) throw new Error("missing release ids");
+
+        const chosenTrack = randomPick(tracks);
+        return {
+          type,
+          id,
+          trackId: chosenTrack.track_id,
+          title: chosenTrack.title || data?.current?.title || labelFromUrl(url),
+          url: chosenTrack.title_link
+            ? `https://ciga239.bandcamp.com${chosenTrack.title_link}`
+            : url,
+        };
+      }
+
+      async function prepareTransmission(runId) {
+        const shuffled = [...RELEASES].sort(() => Math.random() - 0.5);
+
+        for (const url of shuffled) {
+          if (runId !== currentRun) return null;
+          srcLabel.textContent = `↻ ${labelFromUrl(url)}`;
+
+          try {
+            const picked = await resolveRelease(url);
+            return {
+              html: buildBandcampEmbed(picked),
+              label: `◄ ${picked.title.toUpperCase()} ►`,
+            };
+          } catch (error) {
+            console.warn(`[CIGA239] ${url}:`, error.message);
+
+            try {
+              const oembed = await fetchOEmbed(url);
+              if (oembed?.html) {
+                return {
+                  html: enableAutoplay(oembed.html),
+                  label: `◄ ${labelFromUrl(url)} ►`,
+                };
+              }
+            } catch (_) {}
+          }
+        }
+
+        return {
+          html: `
+            <div class="error-msg">
+              FREQUÊNCIA INDISPONÍVEL<br><br>
+              <a href="https://ciga239.bandcamp.com/" target="_blank" rel="noopener">↗ ACEDER A CIGA239</a>
+            </div>`,
+          label: "◄ SINAL PERDIDO ►",
+        };
+      }
+
+      async function startAutoplay() {
+        const runId = ++currentRun;
+        setLoading(true);
+        srcLabel.textContent = "A PREPARAR_";
+        bcPlayer.innerHTML = '<div class="loading-msg">A PREPARAR AUTOPLAY_</div>';
+
+        const prepared = await prepareTransmission(runId);
+        if (!prepared || runId !== currentRun) return;
+
+        srcLabel.textContent = "AUTOPLAY ARMADO_";
+
+        requestAnimationFrame(() => {
+          if (runId !== currentRun) return;
+          bcPlayer.innerHTML = prepared.html;
+          srcLabel.textContent = prepared.label;
+          setLoading(false);
+        });
+      }
+
+      playerToggle.addEventListener("click", () => {
+        setPanelOpen(!playerOpen);
+      });
+
+      btnReload.addEventListener("click", () => {
+        setPanelOpen(true);
+        startAutoplay();
+      });
+
+      startAutoplay();
+    </script>
+  </body>
+</html>
